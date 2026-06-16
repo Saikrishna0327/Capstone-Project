@@ -1,6 +1,6 @@
-DB_USERNAME = "admin"
-DB_PASSWORD = "password123"
-DB_HOST = "stock-trading-db.cvcoomom0bf1.us-east-2.rds.amazonaws.com"
+DB_USERNAME = "root"
+DB_PASSWORD = "Password"
+DB_HOST = "127.0.0.1"
 DB_PORT = "3306"
 DB_NAME = "stock_trading"
 

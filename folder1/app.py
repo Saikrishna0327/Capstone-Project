@@ -177,6 +177,23 @@ class AuditLog(db.Model):
     def __repr__(self):
         return f'<AuditLog: {self.EventType} at {self.EventTime}>'
 
+class SimulatedNews(db.Model):
+    __tablename__ = 'simulated_news'
+    
+    NewsID = db.Column(db.Integer, primary_key=True)
+    # Foreign key linking this news event directly to the primary key of the stock it impacts
+    StockID = db.Column(db.Integer, db.ForeignKey('stocks.StockID'), nullable=False)
+    Headline = db.Column(db.String(255), nullable=False)
+    Sentiment = db.Column(db.String(20), nullable=False)
+    Intensity = db.Column(db.Integer, nullable=False)  
+    Timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Establish an ORM relationship back to the Stock table for easier joins
+    stock = db.relationship('Stock', backref=db.backref('news_events', lazy=True))
+
+    def __repr__(self):
+        return f'<SimulatedNews {self.NewsID}: {self.Headline[:30]}...>'
+
 # Create tables
 with app.app_context():
     db.create_all()
