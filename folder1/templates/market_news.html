@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Live Wire - Market News{% endblock %}
+
+{% block content %}
+<div class="container mt-2">
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-0"><i class="fas fa-bolt text-warning me-2"></i>Live Market Wire</h2>
+            <small class="text-muted">AI-generated corporate events directly moving stock prices.</small>
+        </div>
+        <div>
+            <span class="badge bg-dark border py-2 px-3">
+                <span class="spinner-grow spinner-grow-sm text-danger me-2" role="status"></span>Streaming Live
+            </span>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-lg-9 mx-auto">
+            <div class="d-flex align-items-center justify-content-start bg-light p-3 rounded border">
+                <label for="tickerFilter" class="fw-bold text-secondary me-3 mb-0 text-nowrap">
+                    <i class="fas fa-filter me-1"></i> Filter by Asset:
+                </label>
+                <select id="tickerFilter" class="form-select form-select-sm w-auto bg-white border-secondary-subtle" onchange="applyTickerFilter()">
+                    <option value="ALL">-- Show All Stocks --</option>
+                    {% if news_feed %}
+                        {% set unique_tickers = [] %}
+                        {% for article in news_feed %}
+                            {% if article.stock.Ticker not in unique_tickers %}
+                                {% if unique_tickers.append(article.stock.Ticker) %}{% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        {% for ticker in unique_tickers|sort %}
+                            <option value="{{ ticker }}">{{ ticker }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-9 mx-auto">
+            <div id="terminal-news-feed" class="list-group list-group-flush shadow-sm rounded border">
+                {% if news_feed %}
+                    {% for article in news_feed %}
+                    <div class="list-group-item py-3 px-4 d-flex align-items-start border-bottom bg-white news-item-row" data-ticker="{{ article.stock.Ticker }}">
+                        <span class="text-muted font-monospace small me-4 pt-1" style="min-width: 90px;">
+                            {{ article.Timestamp.strftime('%I:%M:%S %p') }}
+                        </span>
+                        
+                        <div class="ps-3 border-start border-3 {% if article.Sentiment == 'POSITIVE' %}border-success{% elif article.Sentiment == 'NEGATIVE' %}border-danger{% else %}border-warning{% endif %}">
+                            <h5 class="mb-1 fw-bold text-dark">
+                                <span class="badge bg-light text-dark border font-monospace me-2">{{ article.stock.Ticker }}</span>
+                                {{ article.Headline }}
+                            </h5>
+                            <small class="text-muted">
+                                Market Impact: 
+                                <span class="fw-bold {% if article.Sentiment == 'POSITIVE' %}text-success{% elif article.Sentiment == 'NEGATIVE' %}text-danger{% else %}text-warning{% endif %}">
+                                    {{ article.Sentiment }} (Intensity: {{ article.Intensity }}/5)
+                                </span>
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div id="empty-state" class="text-center py-5 text-muted bg-white rounded">
+                        <i class="fas fa-clock fs-1 text-light mb-3"></i>
+                        <p class="mb-0">Awaiting market opening bells... Headlines will stream automatically.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Keeps track of what the user selected so it stays filtered during background updates
+    let activeFilter = 'ALL';
+
+    function applyTickerFilter() {
+        const selectEl = document.getElementById('tickerFilter');
+        activeFilter = selectEl.value;
+        
+        const rows = document.querySelectorAll('.news-item-row');
+        rows.forEach(row => {
+            const ticker = row.getAttribute('data-ticker');
+            if (activeFilter === 'ALL' || ticker === activeFilter) {
+                row.classList.remove('d-none'); // Show row
+            } else {
+                row.classList.add('d-none');    // Hide row
+            }
+        });
+    }
+
+    async function refreshNewsWire() {
+        try {
+            const response = await fetch('/api/market_news');
+            if (!response.ok) return;
+            
+            const newsData = await response.json();
+            const feedContainer = document.getElementById('terminal-news-feed');
+            const filterDropdown = document.getElementById('tickerFilter');
+            
+            if (newsData.length === 0) return;
+
+            let htmlContent = '';
+            let uniqueTickers = new Set();
+
+            newsData.forEach(article => {
+                uniqueTickers.add(article.Ticker);
+
+                let borderClass = 'border-warning';
+                let textClass = 'text-warning';
+                if (article.Sentiment === 'POSITIVE') {
+                    borderClass = 'border-success';
+                    textClass = 'text-success';
+                } else if (article.Sentiment === 'NEGATIVE') {
+                    borderClass = 'border-danger';
+                    textClass = 'text-danger';
+                }
+
+                // Determine if this new row should start hidden based on the active dropdown selection
+                let displayClass = '';
+                if (activeFilter !== 'ALL' && article.Ticker !== activeFilter) {
+                    displayClass = 'd-none';
+                }
+
+                htmlContent += `
+                    <div class="list-group-item py-3 px-4 d-flex align-items-start border-bottom bg-white news-item-row ${displayClass}" data-ticker="${article.Ticker}">
+                        <span class="text-muted font-monospace small me-4 pt-1" style="min-width: 90px;">${article.Timestamp}</span>
+                        <div class="ps-3 border-start border-3 ${borderClass}">
+                            <h5 class="mb-1 fw-bold text-dark">
+                                <span class="badge bg-light text-dark border font-monospace me-2">${article.Ticker}</span>
+                                ${article.Headline}
+                            </h5>
+                            <small class="text-muted">
+                                Market Impact: <span class="fw-bold ${textClass}">${article.Sentiment} (Intensity: ${article.Intensity}/5)</span>
+                            </small>
+                        </div>
+                    </div>
+                `;
+            });
+
+            feedContainer.innerHTML = htmlContent;
+
+            // Dynamically update dropdown filter choices if a brand new ticker registers in the background data
+            const currentOptions = Array.from(filterDropdown.options).map(opt => opt.value);
+            Array.from(uniqueTickers).sort().forEach(ticker => {
+                if (!currentOptions.includes(ticker)) {
+                    const newOpt = document.createElement('option');
+                    newOpt.value = ticker;
+                    newOpt.textContent = ticker;
+                    filterDropdown.appendChild(newOpt);
+                }
+            });
+
+        } catch (err) {
+            console.error("Auto-sync connection hiccup:", err);
+        }
+    }
+
+    // Check for fresh news updates every 5 seconds
+    setInterval(refreshNewsWire, 5000);
+</script>
+{% endblock %}
