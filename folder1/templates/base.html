@@ -6,14 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Stock Trader Simulator{% endblock %}</title>
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
-    <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
@@ -28,8 +26,6 @@
                     {% if session.get('user_id') %}
 
                     {% if session.get('is_admin') %}
-                    <!-- ADMIN NAV -->
-
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin_dashboard') }}">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
@@ -62,7 +58,6 @@
 
                     {% else %}
                     
-                    <!-- USER NAV -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('dashboard') }}">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
@@ -78,6 +73,12 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('portfolio') }}">
                             <i class="fas fa-briefcase"></i> Portfolio
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('market_news') }}">
+                            <i class="fas fa-newspaper"></i> Market News
                         </a>
                     </li>
 
@@ -103,7 +104,6 @@
 
                     {% else %}
                     
-                    <!-- NOT LOGGED IN -->
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('login') }}">
                             <i class="fas fa-sign-in-alt"></i> Login
@@ -121,7 +121,6 @@
         </div>
     </nav>
 
-    <!-- Flash Messages -->
     <div class="container mt-3">
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -154,9 +153,7 @@
             </div>
         </div>
     </footer>
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Custom JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
