@@ -10,7 +10,6 @@
     </div>
 </div>
 
-<!-- Balance Card -->
 <div class="row mb-4">
     <div class="col-lg-6 col-md-12 mb-3">
         <div class="card bg-success text-white shadow border-0 py-2">
@@ -39,25 +38,25 @@
                 <h5 class="card-title mb-4 text-muted">
                     <i class="fas fa-landmark me-2"></i>Market Status
                 </h5>
-              <div class="py-2">
-    {% if market_is_open %}
-        <h2 class="text-success fw-bold mb-2">Market Open</h2>
-    {% else %}
-        <h2 class="text-danger fw-bold mb-2">Market Closed</h2>
-        
-        {% if market_reason %}
-                        <p class="text-muted fw-bold mb-1">
-                            <i class="fas fa-calendar-day me-2"></i>{{ market_reason }}
-                        </p>
-        {% endif %}
-    {% endif %}
-    
-    <p class="text-muted mb-0 fs-5">
-        <i class="far fa-clock me-2"></i>
-        {{ market_config.OpenTime.strftime('%I:%M %p') }} - 
-        {{ market_config.CloseTime.strftime('%I:%M %p') }}
-    </p>
-</div>
+                <div class="py-2">
+                    {% if market_is_open %}
+                        <h2 class="text-success fw-bold mb-2">Market Open</h2>
+                    {% else %}
+                        <h2 class="text-danger fw-bold mb-2">Market Closed</h2>
+                        
+                        {% if market_reason %}
+                            <p class="text-muted fw-bold mb-1">
+                                <i class="fas fa-calendar-day me-2"></i>{{ market_reason }}
+                            </p>
+                        {% endif %}
+                    {% endif %}
+                    
+                    <p class="text-muted mb-0 fs-5">
+                        <i class="far fa-clock me-2"></i>
+                        {{ market_config.OpenTime.strftime('%I:%M %p') }} - 
+                        {{ market_config.CloseTime.strftime('%I:%M %p') }}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
@@ -70,27 +69,27 @@
                 </h5>
                 <ul class="list-group list-group-flush">
                     {% for entry in transactions[:3] %}
-<li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-3">
-    <span class="fs-5">
-        <i class="{{ entry.icon }} {{ entry.color }} me-3"></i>
-        
-        {% if 'SELL' in entry.TransactionType %}
-            Sell
-        {% elif 'BUY' in entry.TransactionType %}
-            Buy
-        {% elif 'DEPOSIT' in entry.TransactionType %}
-            Deposit
-        {% elif 'WITHDRAW' in entry.TransactionType %}
-            Withdrawal
-        {% else %}
-            {{ entry.TransactionType }}
-        {% endif %}
-    </span>
-    <span class="fw-bold fs-4 {{ entry.color }}">
-        ${{ "%.2f"|format(entry.Amount) }}
-    </span>
-</li>
-{% endfor %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 border-0 py-3">
+                        <span class="fs-5">
+                            <i class="{{ entry.icon }} {{ entry.color }} me-3"></i>
+                            
+                            {% if 'SELL' in entry.TransactionType %}
+                                Sell
+                            {% elif 'BUY' in entry.TransactionType %}
+                                Buy
+                            {% elif 'DEPOSIT' in entry.TransactionType %}
+                                Deposit
+                            {% elif 'WITHDRAW' in entry.TransactionType %}
+                                Withdrawal
+                            {% else %}
+                                {{ entry.TransactionType }}
+                            {% endif %}
+                        </span>
+                        <span class="fw-bold fs-4 {{ entry.color }}">
+                            ${{ "%.2f"|format(entry.Amount) }}
+                        </span>
+                    </li>
+                    {% endfor %}
                 </ul>
             </div>
         </div>
